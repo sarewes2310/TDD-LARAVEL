@@ -1,0 +1,50 @@
+version: "3.9"
+services:
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass wGEZudfUVpq2pWSLqGAUerNQzLoOMGz1vOk9dDzWqyfirjeq9J
+    volumes:
+      - cache:/data
+  web1:
+    image: infraunnes/php:8.1-apache-rdkafka
+    container_name: foa-laravel-tdd-web
+    environment:
+      CREATE_LARAVEL_STORAGE: "1"
+      COMPOSERMIRROR: "https://mirrors.cloud.tencent.com/composer/"
+      NPMMIRROR: "https://registry.npmmirror.com"
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: wGEZudfUVpq2pWSLqGAUerNQzLoOMGz1vOk9dDzWqyfirjeq9J
+    ports:
+      - "8025:80"
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    volumes:
+      - "./public:/var/www/"
+      - "./:/opt/foa-laravel-tdd"
+    depends_on:
+      - cache
+  mysql1:
+    image: mysql:8.0.31
+    container_name: foa-laravel-tdd-mysql
+    ports:
+      - "33066:3306"
+    depends_on:
+      - web1
+    volumes:
+      - "./mysqldata:/var/lib/mysql"
+    environment:
+      - MYSQL_ROOT_PASSWORD=H@loB3B
+      - MYSQL_DATABASE=foa
+      - MYSQL_USER=g0d@i__
+      - MYSQL_PASSWORD=M@nt9p__t@pi__b00ng
+volumes:
+  my-datavolume:
+    external: true
+  cache:
+    driver: local
+
+  # DISABLE DULU YA
